@@ -7,12 +7,14 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="httpclient" />
+        <module name="jsonutil" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="commons" target="1.5" />
-      <module name="httpclient" target="1.5" />
-      <module name="parent" target="1.5" />
+    <bytecodeTargetLevel target="1.8">
+      <module name="commons" target="1.8" />
+      <module name="httpclient" target="1.8" />
+      <module name="jsonutil" target="1.8" />
+      <module name="parent" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>
