@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -39,16 +40,21 @@ public class HttpUtil {
         if (methodType == null) {
             throw new IllegalArgumentException("http请求参数类型错误");
         }
-
+        if (headers == null) {
+            headers = new HashMap<>();
+        }
+        if (params == null) {
+            params = new HashMap<>();
+        }
         CloseableHttpClient httpClient = HttpClients.createDefault();
         HttpResult result = null;
         switch (methodType) {
             case GET:
-                if (params != null) {
+                if (params.size() > 0) {
                     url = formatGetMethodUrl(url, params);
                 }
                 HttpGet httpGet = new HttpGet(url);
-                result = getHttpResult(httpGet,headers,new HashMap<>(),httpClient);
+                result = getHttpResult(httpGet, headers, new HashMap<>(), httpClient);
                 break;
             case POST:
                 HttpPost httpPost = new HttpPost(url);
@@ -59,8 +65,11 @@ public class HttpUtil {
                 result = getHttpResult(httpPut, headers, params, httpClient);
                 break;
             case DELETE:
+                if (params.size() > 0) {
+                    url = formatGetMethodUrl(url, params);
+                }
                 HttpDelete httpDelete = new HttpDelete(url);
-                result = getHttpResult(httpDelete, headers, params, httpClient);
+                result = getHttpResult(httpDelete, headers, new HashMap<>(), httpClient);
                 break;
         }
 
@@ -78,10 +87,10 @@ public class HttpUtil {
     private static HttpResult getHttpResult(HttpRequestBase method, Map<String, String> headers, Map<String, String> params, CloseableHttpClient httpClient) throws IOException {
         setRequestConfig(method);
         List<NameValuePair> nvps = new ArrayList<>();
-        if (headers!=null){
+        if (headers != null) {
             Set<Map.Entry<String, String>> entries = headers.entrySet();
-            for (Map.Entry<String,String> entry:entries){
-                method.addHeader(entry.getKey(),entry.getValue());
+            for (Map.Entry<String, String> entry : entries) {
+                method.addHeader(entry.getKey(), entry.getValue());
             }
         }
         params.forEach((key, value) -> nvps.add(new BasicNameValuePair(key, value)));
@@ -95,9 +104,12 @@ public class HttpUtil {
     }
 
     private static String formatGetMethodUrl(String url, Map<String, String> params) {
-        StringBuilder sb = new StringBuilder();
-        params.forEach((key, value) -> sb.append(key).append("&").append(value));
-        return url + "?" + sb.toString();
+        Set<String> sets = new HashSet<>();
+        params.forEach((key, value) -> {
+            sets.add(key + "=" + value);
+        });
+        String s = String.join("&", sets);
+        return url + "?" + s;
     }
 
     private static HttpResult getContentByEntity(CloseableHttpResponse response) throws IOException {
